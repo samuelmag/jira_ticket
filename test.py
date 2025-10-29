@@ -28,7 +28,7 @@ def createJIRA():
                             {
                                 "text": "My first jira ticket",
                                 "type": "text"
-                            }
+             chat               }
                         ],
                         "type": "paragraph"
                     }
