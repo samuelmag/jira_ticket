@@ -92,6 +92,38 @@ curl -X POST http://localhost:5000/createJIRA `
 - Add configurable project key and issue type via env vars or config file.
 - Add tests for the webhook handler and Jira request formation.
 
+## Diagrams
+
+Below are two simple Mermaid diagrams illustrating the architecture and the request sequence used by this project. These render on GitHub and many Markdown viewers that support Mermaid. If your viewer doesn't render Mermaid, you can use an online Mermaid live editor (https://mermaid.live) to paste the blocks below and export images.
+
+### Architecture
+
+```mermaid
+graph LR
+  Dev[Developer / GitHub User] -->|comments on issue| GH[GitHub]
+  GH -->|webhook POST /createJIRA| EC2[EC2 Instance (Flask App)]
+  EC2 -->|POST /rest/api/3/issue| Jira[Jira Cloud API]
+  Jira -->|201 Created| EC2
+  EC2 -->|response| GH
+```
+
+### Sequence (simplified)
+
+```mermaid
+sequenceDiagram
+  participant Dev as Developer
+  participant GH as GitHub
+  participant EC2 as EC2 (Flask)
+  participant Jira as Jira Cloud
+
+  Dev->>GH: comment "/jira" on issue
+  GH->>EC2: POST /createJIRA (webhook payload)
+  EC2->>Jira: POST /rest/api/3/issue (with auth)
+  Jira-->>EC2: 201 Created (issue key)
+  EC2-->>GH: optional status/response
+  EC2-->>Dev: returns webhook handler response
+```
+
 ## License
 
 Add an appropriate license file if you intend to open-source this project.
