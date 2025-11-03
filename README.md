@@ -1,97 +1,155 @@
-# Jira Ticket Creator (GitHub → Jira)
+# 🧩 Jira Ticket Creator (GitHub → Jira)
 
-Lightweight Flask service that listens for GitHub issue comment webhooks and creates a Jira issue when a comment contains the command `/jira`.
+Lightweight Flask service that listens for GitHub issue comment webhooks and automatically creates a Jira issue when a comment contains the command `/jira`.
 
-## What this project does
+---
 
-- Listens for GitHub webhook events (expects `X-GitHub-Event: issue_comment`).
-- When a comment body equals `/jira` (case-insensitive), the service creates an issue in Jira using the Jira REST API.
+## 🚀 What This Project Does
 
-The main implementation is in `test.py` (function `createJIRA`).
+- Listens for GitHub webhook events (`X-GitHub-Event: issue_comment`).
+- When a comment body equals `/jira` (case-insensitive), it creates an issue in Jira using the **Jira REST API**.
+- Logs requests to the console for debugging and traceability.
 
-## Files
+Main logic lives in **`test.py`** (function `createJIRA`).
 
-- `test.py` — main Flask app and webhook handler.
+---
 
-## Prerequisites
+## 📂 Files
 
-- Python 3.8+
-- A Jira Cloud account with an API token (or other Jira REST credentials).
+| File | Description |
+|------|--------------|
+| `test.py` | Main Flask app and webhook handler |
 
-## Environment variables
+---
 
-Set these before running the app. Example names used by `test.py`:
+## 🧰 Prerequisites
 
-- `JIRA_URL` — base URL for your Jira instance (e.g. `https://yourcompany.atlassian.net`).
-- `JIRA_API_TOKEN` — API token for the Jira account.
-- `JIRA_EMAIL` — email address for the Jira account.
+- Python **3.8+**
+- Jira Cloud account with API token
 
-## Installation
+---
 
-Install required Python packages (recommended to use a virtualenv):
+## ⚙️ Environment Variables
+
+Set these before running the app:
+
+| Variable | Description |
+|-----------|--------------|
+| `JIRA_URL` | Base URL for your Jira instance (e.g. `https://yourcompany.atlassian.net`) |
+| `JIRA_API_TOKEN` | API token for your Jira account |
+| `JIRA_EMAIL` | Jira account email |
+
+Example (PowerShell):
 
 ```powershell
+$env:JIRA_URL = "https://yourcompany.atlassian.net"
+$env:JIRA_API_TOKEN = "your_api_token"
+$env:JIRA_EMAIL = "you@example.com"
+```
+
+---
+
+## 🧑‍💻 Installation
+
+```bash
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+.\.venv\Scripts\activate  # Windows
+source .venv/bin/activate  # Linux/Mac
+
 pip install --upgrade pip
 pip install flask requests
 ```
 
-You can also create a `requirements.txt` with:
+Or with `requirements.txt`:
 
 ```
 flask
 requests
 ```
 
-and install with `pip install -r requirements.txt`.
+Then:
 
-## Run (development)
+```bash
+pip install -r requirements.txt
+```
 
-In PowerShell, set the environment variables and start the Flask app:
+---
 
-```powershell
-#$env:JIRA_URL = "https://yourcompany.atlassian.net"
-#$env:JIRA_API_TOKEN = "your_api_token"
-#$env:JIRA_EMAIL = "you@example.com"
+## ▶️ Run (Development)
+
+```bash
 python test.py
 ```
 
-The app listens by default on `0.0.0.0:5000` (Flask debug server). For production, run behind a WSGI server (gunicorn/uwsgi) and secure credentials.
+By default, the app listens on:  
+`http://0.0.0.0:5000`  
 
-## Endpoint
+For production, use a proper WSGI server (e.g. **gunicorn** or **uwsgi**) and secure your credentials.
 
-- POST `/createJIRA`
-  - Expects a GitHub webhook payload.
-  - Requires header `X-GitHub-Event: issue_comment`.
-  - Only triggers when the comment body equals `/jira`.
+---
 
-Sample test curl (local):
+## 🔗 Endpoint
 
-```powershell
-curl -X POST http://localhost:5000/createJIRA `
-  -H "Content-Type: application/json" `
-  -H "X-GitHub-Event: issue_comment" `
-  -d '{"comment": {"body": "/jira", "user": {"login": "octocat"}}, "issue": {"html_url": "https://github.com/org/repo/issues/123"}}'
+### `POST /createJIRA`
+- Expects a GitHub webhook payload.
+- Requires the header: `X-GitHub-Event: issue_comment`.
+- Triggers **only** when the comment body equals `/jira`.
+
+#### Example test (local):
+
+```bash
+curl -X POST http://localhost:5000/createJIRA   -H "Content-Type: application/json"   -H "X-GitHub-Event: issue_comment"   -d '{"comment": {"body": "/jira", "user": {"login": "octocat"}}, "issue": {"html_url": "https://github.com/org/repo/issues/123"}}'
 ```
 
-## Implementation notes
+---
 
-- The Jira payload is built in `test.py` and posts to `${JIRA_URL}/rest/api/3/issue`.
-- You should update the `project.key` (`"AB"`) and `issuetype.id` values to match your Jira setup.
+## 🧠 Architecture Overview
 
-## Security & production suggestions
+```mermaid
+flowchart LR
+    A[GitHub Issue Comment Event] -->|Webhook Payload| B[Flask App /createJIRA]
+    B -->|POST JSON to Jira API| C[Jira Cloud]
+    C -->|Response (201)| B
+    B -->|Return Status| D[GitHub Webhook Delivery Log]
+```
 
-- Verify GitHub webhook signatures (HMAC) before trusting payloads.
-- Do not run Flask's debug server in production.
-- Use environment variable management (secrets manager, .env with proper protections, or CI secrets).
+---
 
-## TODOs
+## 🧩 Recent Fixes & Improvements
 
-- Validate and verify GitHub webhook signatures.
-- Add configurable project key and issue type via env vars or config file.
-- Add tests for the webhook handler and Jira request formation.
+| Change | Description |
+|--------|--------------|
+| ✅ Added flexible JSON parsing | Handles missing `comment` or `issue` keys safely |
+| ✅ Console logging added | Prints payload and event info to help debug |
+| ✅ Dynamic checks | Validates trigger comment `/jira` before creating issues |
+| ✅ Cleaned payload structure | Jira issue summary, description, and user info formatted clearly |
+| ✅ Error responses improved | 400 errors now return clear messages |
 
-## License
+---
+
+## 🔒 Security & Best Practices
+
+- **Do not** expose your Flask debug server publicly.
+- Validate GitHub webhook signatures (HMAC) before trusting payloads.
+- Use **AWS Secrets Manager** or `.env` files for environment variables.
+- Use HTTPS and firewall rules to limit access to port 5000.
+
+---
+
+## 🧱 Future Enhancements
+
+- ✅ Configurable project key and issue type via environment vars.
+- 🧪 Unit tests for webhook handler and Jira API integration.
+- 🔐 Add webhook signature validation.
+
+---
+
+## 📜 License
 
 Add an appropriate license file if you intend to open-source this project.
+
+---
+
+## 💡 Credits
+
+Developed by **Magunda Samuel** — integrating GitHub automation with Jira using Flask on AWS EC2.
