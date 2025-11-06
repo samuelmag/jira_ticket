@@ -93,22 +93,7 @@ curl -X POST http://localhost:5000/createJIRA `
 - Add configurable project key and issue type via env vars or config file.
 - Add tests for the webhook handler and Jira request formation.
 
-## Diagrams
-
-Below are two simple Mermaid diagrams illustrating the architecture and the request sequence used by this project. These render on GitHub and many Markdown viewers that support Mermaid. If your viewer doesn't render Mermaid, you can use an online Mermaid live editor (https://mermaid.live) to paste the blocks below and export images.
-
 ### Architecture
-
-```mermaid
-graph LR
-  Dev[Developer / GitHub User] -->|comments on issue| GH[GitHub]
-  GH -->|webhook POST /createJIRA| EC2[EC2 Instance (Flask App)]
-  EC2 -->|POST /rest/api/3/issue| Jira[Jira Cloud API]
-  Jira -->|201 Created| EC2
-  EC2 -->|response| GH
-```
-
-### Sequence (simplified)
 
 ```mermaid
 sequenceDiagram
@@ -124,11 +109,6 @@ sequenceDiagram
   EC2-->>GH: optional status/response
   EC2-->>Dev: returns webhook handler response
 ```
-
-## License
-
-Add an appropriate license file if you intend to open-source this project.
-=======
 # 🧩 Jira Ticket Creator (GitHub → Jira)
 
 Lightweight Flask service that listens for GitHub issue comment webhooks and automatically creates a Jira issue when a comment contains the command `/jira`.
@@ -234,18 +214,6 @@ curl -X POST http://localhost:5000/createJIRA   -H "Content-Type: application/js
 
 ---
 
-## 🧠 Architecture Overview
-
-```mermaid
-flowchart LR
-    A[GitHub Issue Comment Event] -->|Webhook Payload| B[Flask App /createJIRA]
-    B -->|POST JSON to Jira API| C[Jira Cloud]
-    C -->|Response (201)| B
-    B -->|Return Status| D[GitHub Webhook Delivery Log]
-```
-
----
-
 ## 🧩 Recent Fixes & Improvements
 
 | Change | Description |
@@ -272,12 +240,6 @@ flowchart LR
 - ✅ Configurable project key and issue type via environment vars.
 - 🧪 Unit tests for webhook handler and Jira API integration.
 - 🔐 Add webhook signature validation.
-
----
-
-## 📜 License
-
-Add an appropriate license file if you intend to open-source this project.
 
 ---
 
