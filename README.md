@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Jira Ticket Creator (GitHub → Jira)
 
 Lightweight Flask service that listens for GitHub issue comment webhooks and creates a Jira issue when a comment contains the command `/jira`.
